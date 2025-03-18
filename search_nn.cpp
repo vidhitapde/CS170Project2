@@ -3,8 +3,8 @@
 #include <vector>
 #include <sstream> 
 #include <algorithm>
-#include <cstdlib>
-#include <cmath> 
+#include <cmath>
+#include <chrono>  
 using namespace std;
 
 
@@ -54,49 +54,103 @@ double leave_one_out_cross_validation(vector<vector<double>> data, vector<int> c
 
 void forward_feature_search_demo(vector<vector<double>> data)
 {
-    vector<int> current_set_of_features;
-    int feature_to_add_at_this_level;
-    double best_so_far_accuracy; 
-    int num_feature = data[0].size(); 
+   vector<int> current_set_of_features;
+   vector<int> best_set_of_features;
+   double best_overall_accuracy = 0.0;
+   for(int i = 0; i < data[0].size() - 1; i++)
+   {
+       cout << "On the " << i + 1 << "th level of the search tree" << endl;
 
-    for(int i = 0; i < num_feature; i++)
-    {
-        cout << "On the " << i << "th level of the search tree" << endl; 
 
-        best_so_far_accuracy = 0.0; 
+       double best_so_far_accuracy = 0.0;
+       int feature_to_add_at_this_level = -1;
 
-        for(int k = 0; k < num_feature; k++)
-        {
-            if(find(current_set_of_features.begin(), current_set_of_features.end(), k) == current_set_of_features.end())
-            {
-                cout << "Considering adding the " << k  << " feature" << endl; 
-                double accuracy = leave_one_out_cross_validation(data,current_set_of_features); 
 
-                if(accuracy > best_so_far_accuracy)
-                {
-                    best_so_far_accuracy = accuracy; 
-                    feature_to_add_at_this_level = k; 
-                }
-            }
-        }
-        current_set_of_features.push_back(feature_to_add_at_this_level);
-        cout << "On level " << i << " I added feature " << feature_to_add_at_this_level << " to current set" << endl; 
+       for(int k = 1; k < data[0].size() - 1; k++)
+       {
+           int best_feature = -1;
+           if(find(current_set_of_features.begin(), current_set_of_features.end(), k) == current_set_of_features.end())
+           {
+               cout << "Considering adding the " << k  << " feature" << endl;
+               vector<int> temp_set = current_set_of_features;
+               temp_set.push_back(k);
+               double accuracy = leave_one_out_cross_validation(data,temp_set);
 
-    }
+               cout << "Evaluating feature " << k  << " Accuracy: " << accuracy * 100 << "%\n" ;
+
+
+               if(accuracy > best_so_far_accuracy)
+               {
+                   best_so_far_accuracy = accuracy;
+                   feature_to_add_at_this_level = k;
+               }
+              
+           }
+       }
+       if(feature_to_add_at_this_level != -1)
+       {
+           current_set_of_features.push_back(feature_to_add_at_this_level);
+           cout << "Best feature added: " << i + 1 << " - New Accuracy: " << feature_to_add_at_this_level * 100 << "%\n";
+           if(best_so_far_accuracy > best_overall_accuracy)
+           {
+               best_overall_accuracy = best_so_far_accuracy;
+               best_set_of_features = current_set_of_features;
+           }
+           else
+           {
+               cout << "Accuracy decrease, continue for local maxima" << endl; 
+           }
+       }
+       cout << "Current feature set found:  {";
+       for(size_t x = 0; x < current_set_of_features.size(); x++)
+       {
+           cout << current_set_of_features[x] << (x < current_set_of_features.size() - 1 ? ", " : "");
+       }
+       cout << "} with accuracy: " << best_so_far_accuracy * 100 << "%\n";
+   }
+   cout << "Best feature set found: {";
+   for (int i = 0; i < best_set_of_features.size(); i++)
+   {
+       cout << best_set_of_features[i] << (i < best_set_of_features.size() - 1 ? ", " : "");
+   }
+   cout << "} with accuracy: " << best_overall_accuracy * 100 << "%\n";
 }
+
+
 
 
 int main()
 {
     cout << "Welcome to 's Feature Selection Algorithm" << endl; 
 
-    cout << "Type in the name of the file to test: "; 
+    //cout << "Type in the name of the file to test: "; 
 
     string fileName;
-    cin >> fileName; 
+    cout << "Type the number of the file you want to run." << endl; 
+    cout << "Choose 1 for CS170_Small_Dataset__35.txt" << endl;
+    cout << "Choose 2 for CS170_Large_Dataset__22.txt" << endl; 
+
+
+    int choose; 
+
+    cin >> choose; 
+
+    if(choose == 1)
+    {
+        fileName = "/Users/vidhitapde/CS170Project2/CS170_Small_Data__35.txt";
+    }
+    else if (choose == 2)
+    {
+        fileName = "/Users/vidhitapde/CS170Project2/CS170_Large_Data__22.txt"; 
+    }
+    else
+    {
+        cout << "Invalid choice " << endl; 
+    }
 
     ifstream file(fileName);
-
+    
+   
     if(!file.is_open())
     {
         cout << "Error: File Not Found" << endl; 
@@ -123,10 +177,8 @@ int main()
             data.push_back(row);
 
         }
-
-
     }
-    file.close(); 
+    file.close();
 
 
     cout << "Type the number of the algorithm you want to run." << endl; 
@@ -141,7 +193,7 @@ int main()
     }
     else if (choice == 2)
     {
-        return 0; // implement //backward_feature_search_demo(data); 
+        //backward_feature_search_demo(data); 
     }
     else
     {
@@ -152,21 +204,3 @@ int main()
     return 0; 
 
 }
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
