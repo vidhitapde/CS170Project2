@@ -4,19 +4,57 @@
 #include <sstream> 
 #include <algorithm>
 #include <cstdlib>
-
+#include <cmath> 
 using namespace std;
 
 
-double leave_one_out_cross_validation(vector<vector<double>> features, vector<double> current_set, double feature_to_add)
+double leave_one_out_cross_validation(vector<vector<double>> data, vector<int> current_set)
 {
-    return static_cast<double>(rand()) / RAND_MAX;
+    double accuracy = 0.0; 
+    double number_of_correctly_classifed = 0.0;
+    double nearest_neighbor_label = 0.0; 
+    for(int i = 0; i < data.size(); i++)
+    {
+        double label_object_to_classify = data[i][0];
+        vector<double>object_to_classify(data[i].begin() + 1, data[i].end());
+
+        double nearest_neighbor_distance = INT_MAX; 
+        double nearest_neighbor_location = INT_MAX; 
+
+        for(int k = 0; k < data.size(); k++)
+        {
+            if(k != i)
+            {
+
+                double distance = 0.0;
+
+                for(int j: current_set)
+                {
+                    distance += pow((data[i][j] - data[k][j]),2);
+                }
+
+                if(distance < nearest_neighbor_distance)
+                {
+                    nearest_neighbor_distance = distance; 
+                    nearest_neighbor_location = k; 
+                    nearest_neighbor_label  = data[nearest_neighbor_location][0]; 
+
+                }
+            }
+        }
+        if(nearest_neighbor_label == label_object_to_classify)
+        {
+            number_of_correctly_classifed++; 
+        }
+    } 
+    return accuracy = number_of_correctly_classifed / data.size(); 
+
 }
 
 
 void forward_feature_search_demo(vector<vector<double>> data)
 {
-    vector<double> current_set_of_features;
+    vector<int> current_set_of_features;
     int feature_to_add_at_this_level;
     double best_so_far_accuracy; 
     int num_feature = data[0].size(); 
@@ -32,7 +70,7 @@ void forward_feature_search_demo(vector<vector<double>> data)
             if(find(current_set_of_features.begin(), current_set_of_features.end(), k) == current_set_of_features.end())
             {
                 cout << "Considering adding the " << k  << " feature" << endl; 
-                double accuracy = leave_one_out_cross_validation(data,current_set_of_features, k+1); 
+                double accuracy = leave_one_out_cross_validation(data,current_set_of_features); 
 
                 if(accuracy > best_so_far_accuracy)
                 {
@@ -50,7 +88,7 @@ void forward_feature_search_demo(vector<vector<double>> data)
 
 int main()
 {
-    cout << "Welcome to Vidhi Tapde's Feature Selection Algorithm" << endl; 
+    cout << "Welcome to 's Feature Selection Algorithm" << endl; 
 
     cout << "Type in the name of the file to test: "; 
 
@@ -65,7 +103,6 @@ int main()
         return 1; 
     }
     vector<vector<double>> data; 
-    vector<double> class_labels;
 
     string line; 
 
@@ -74,34 +111,43 @@ int main()
         stringstream sstream(line); 
         double value; 
         vector <double> row;
-        sstream >> value;
 
-        class_labels.push_back(value); 
-
-        while(sstream >> value)
+        if(sstream >> value)
         {
             row.push_back(value); 
+
+            while(sstream >> value)
+            {
+                row.push_back(value);
+            }
+            data.push_back(row);
+
         }
-        data.push_back(row); 
 
 
     }
     file.close(); 
 
-    for(int i = 0; i < data.size(); i++)
-    {
-        cout << "Class: " << class_labels[i] << " Features: "; 
-        for(double val: data[i])
-        {
-            cout << val << " "; 
-        }
-        cout << endl; 
-    }
-
 
     cout << "Type the number of the algorithm you want to run." << endl; 
 
-    forward_feature_search_demo(data); //do the search first 
+    int choice; 
+
+    cin >> choice; 
+
+    if(choice == 1)
+    {
+        forward_feature_search_demo(data); //do the search first 
+    }
+    else if (choice == 2)
+    {
+        return 0; // implement //backward_feature_search_demo(data); 
+    }
+    else
+    {
+        cout << "Invalid choice " << endl; 
+    }
+
     
     return 0; 
 
