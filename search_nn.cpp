@@ -258,23 +258,42 @@ int main()
         return 1; 
     }
     vector<vector<double>> dataSet; //2D vector stores the dataet
+
     string line;  //variable to store each line read from the file 
     while(getline(file,line)) //reads line by line
     {
         stringstream sstream(line);  //convers the line to a stream
-        double value;
+        string stringVal;
+        string value; 
         vector<double> rowVal; //temp vector to store row values
-        if(sstream >> value) //read the first value
-        {
-            rowVal.push_back(value); //stores the first value
         
-            while(sstream >> value) // read remaining values from the line 
+        if(line.find(',') != string::npos) //if line contains commas
+        {
+            while(getline(sstream, stringVal, ',')) 
             {
-                rowVal.push_back(value); 
+                rowVal.push_back(stod(stringVal)); //split the line using ',' store each stringVal as a double in rowVal
             }
-            dataSet.push_back(rowVal); //add row to dataset 
+            if(!rowVal.empty())
+            {
+                dataSet.push_back(rowVal);  //if rowVal is not empty, push it to datSet a vector of vectors 
+            }
         }
+        else
+        {
+            if(sstream >> value) //read the first value
+            {
+                rowVal.push_back(stod(value)); //stores the first value
+            
+                while(sstream >> value) // read remaining values from the line 
+                {
+                    rowVal.push_back(stod(value)); 
+                }
+                dataSet.push_back(rowVal); //add row to dataset 
+            }
+        }
+
     }
+
     file.close(); //closes the file 
     cout << "Type the number of the algorithm you want to run. " << endl; 
     cout << "1) Forward Selection" << endl; 
@@ -283,6 +302,7 @@ int main()
     cin >> choice; 
     cout << endl; 
     //prints the number of features and instances in dataset
+    cout << "base accuracy " << accuracywithnofeatures(dataSet) << endl; 
     cout << "This dataset has " << dataSet[0].size() - 1 << " features (not including the class attribute), with " << dataSet.size() << " instances." << endl;
     //calculates the current set values, for all features 
     vector<int> currentSet(dataSet[0].size()-1);
